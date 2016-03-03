@@ -5,13 +5,27 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import ftpFileDownloader.util.*;
+
 public class Tool {
-	public static void main(String[] args){
-		System.out.println("Input file path\n");
-		System.out.println(args[0]);
+	public static void error(int id){
+		if(id == -1)
+			System.out.println("Invalid use of program. Execute with flag -about for details\n"
+				+ "or with -output <directory_path> if you want to download the FTP file.\n");
+		if(id == -2) 
+			System.out.println("You do not have permissions to modify this directory."
+    			+ "\nPlease try afresh with another directory.");
+	}
+	public static void about(){
+		System.out.println("\u00A9 2016, Siddharth Dinesh, https://github.com/sid-dinesh94/FTPFileDownloader\n"
+				+ "List of external library dependencies\n"
+				+ "OpenCSV\n"
+				+ "Apache Commons Net\n");
+		return;
+	}
+	public static void output(String relativePath){
 		String fileName = "FTP File Downloader and Processor example file"; 
-		String downloadPath = args[0] + "/backup/" + fileName + ".zip";
-		File downloadFilePath = new File(args[0]+"/backup");
+		String downloadPath = relativePath + "/backup/" + fileName + ".zip";
+		File downloadFilePath = new File(relativePath+"/backup");
 		if (!downloadFilePath.exists()) {
 		    System.out.println("creating directory: " + downloadFilePath);
 		    boolean result = false;
@@ -21,7 +35,8 @@ public class Tool {
 		        result = true;
 		    } 
 		    catch(SecurityException se){
-		        //handle it
+		    	error(-2);
+		    	return;
 		    }        
 		    if(result) {    
 		        System.out.println("DIR created");  
@@ -37,7 +52,7 @@ public class Tool {
 	    	   System.out.println("There has been an issue in reconnecting to the server.\nDo you want to retry?");
 	           e.printStackTrace();
 	       }
-        String destDirectory = args[0]+ "/backup/";
+        String destDirectory = relativePath+ "/backup/";
         Unzipper zipFile = new Unzipper();
         try {
             zipFile.unzip(downloadPath, destDirectory);
@@ -48,7 +63,7 @@ public class Tool {
         }
         System.out.println("The unzipping was successful");
         String timeStamp = new SimpleDateFormat("yyyy-MM-dd-mm-ss").format(Calendar.getInstance().getTime());
-        String finalDest = args[0] + "/" + timeStamp + ".csv";
+        String finalDest = relativePath + "/" + timeStamp + ".csv";
         ProcessCSV csv = new ProcessCSV(destDirectory+fileName+".csv",finalDest, ';');
 		try {
 			csv.process();
@@ -66,5 +81,18 @@ public class Tool {
 		backup.delete();
 		System.out.println("Deletion was successful");
 	}
-
+	
+	public static void main(String[] args){
+		if(args.length < 1){
+			error(-1);
+			return;
+		}
+		if(args[0].equals("-about")){
+			about();
+			return;
+		}
+		else if(args.length==2 && args[0].equals("-output")){
+			output(args[1]);
+		}
+	}
 }
