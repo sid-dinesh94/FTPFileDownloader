@@ -4,6 +4,7 @@ package ftpFileDownloader.util;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.ConnectException;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -15,14 +16,14 @@ public class FileDownloader {
    FTPClient ftp = null;
 
 
-   public FileDownloader(String host, String user, String pwd) throws Exception {
+   public FileDownloader(String host, String user, String pwd) throws IOException {
        ftp = new FTPClient();
        int reply;
        ftp.connect(host);
        reply = ftp.getReplyCode();
        if (!FTPReply.isPositiveCompletion(reply)) {
            ftp.disconnect();
-           throw new Exception("Exception in connecting to FTP Server");
+           throw new IOException("Exception in connecting to FTP Server");
        }
        ftp.login(user, pwd);
        ftp.setFileType(FTP.BINARY_FILE_TYPE);
