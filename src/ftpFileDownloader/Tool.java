@@ -47,7 +47,7 @@ public class Tool {
             ex.printStackTrace();
         }
         System.out.println("The unzipping was successful");
-        String timeStamp = new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
+        String timeStamp = new SimpleDateFormat("yyyy-MM-dd-mm-ss").format(Calendar.getInstance().getTime());
         String finalDest = args[0] + "/" + timeStamp + ".csv";
         ProcessCSV csv = new ProcessCSV(destDirectory+fileName+".csv",finalDest, ';');
 		try {
@@ -57,6 +57,14 @@ public class Tool {
 			System.out.println("Error in processing CSV file.\nWant to retry?");
 			e.printStackTrace();
 		}
+		
+		File zip = new File(downloadPath);
+		zip.delete();
+		File spreadsheet = new File(destDirectory+fileName+".csv");
+		spreadsheet.delete();
+		File backup = new File(destDirectory);
+		backup.delete();
+		System.out.println("Deletion was successful");
 	}
 
 }
