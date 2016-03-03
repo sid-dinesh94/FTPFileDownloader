@@ -15,7 +15,7 @@ public class ProcessCSV {
 	}
 	public void process() throws IOException{
 		CSVReader reader = new CSVReader(new FileReader(filePath), seperator);
-		CSVWriter writer = new CSVWriter(new FileWriter(writePath),seperator);
+		CSVWriter writer = new CSVWriter(new FileWriter(writePath));
 	    String[] nextLine; 
 	    //int count =0;
 	    while ((nextLine = reader.readNext()) != null) {
