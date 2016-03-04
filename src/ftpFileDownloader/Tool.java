@@ -9,8 +9,18 @@ import java.util.Calendar;
 import java.nio.file.*;
 
 import ftpFileDownloader.util.*;
-
+/**<h1> Tool Class </h1>
+ * This is the class in the project that links all the utility classes as well 
+ * as bothers with parsing the command line arguments
+ * @author siddharth dinesh
+ * @version 1.0
+ *
+ */
 public class Tool {
+	/** The error handling method for the program
+	 * 
+	 * @param id used to convey the error message
+	 */
 	public static void error(int id){
 		if(id == -1)
 			System.out.println("Invalid use of program. Execute with flag -about for details\n"
@@ -20,6 +30,10 @@ public class Tool {
 			System.out.println("You do not have permissions to modify this directory."
     			+ "\nPlease try afresh with another directory.\n");
 	}
+	
+	/**This method deals with the about flag in the command line argument
+	 * 
+	 */
 	public static void about(){
 		System.out.println("\u00A9 2016, Siddharth Dinesh, https://github.com/sid-dinesh94/FTPFileDownloader\n"
 				+ "List of external library dependencies\n"
@@ -31,12 +45,24 @@ public class Tool {
 		return;
 	}
 	
+	/**
+	 * This method checks to see if the inputted Absolute Directory Path exists in 
+	 * the file system
+	 * @param path An instance of the Path class which carries the directory path
+	 * fed as input to the program
+	 * @return True if path is valid, false if not
+	 */
 	public static Boolean isDir(Path path) {
 		if (path == null || !Files.exists(path)) return false;
 		else return Files.isDirectory(path);
 	}
 	
-	public void output(String relativePath){
+	/**This method deals with the flag -output in the execution of the program
+	 * 
+	 * 
+	 * @param directoryPath contains the directoryPath fed as input to the program
+	 */
+	public void output(String directoryPath){
 		InputStream credentialsFile;
 		credentialsFile = getClass().getClassLoader().getResourceAsStream("Credentials.txt");
 		
@@ -64,8 +90,8 @@ public class Tool {
 			return;
 		}
 		String fileName = credentials[3]; 
-		String downloadPath = relativePath + "/backup/" + fileName + ".zip";
-		File downloadFilePath = new File(relativePath+"/backup");
+		String downloadPath = directoryPath + "/backup/" + fileName + ".zip";
+		File downloadFilePath = new File(directoryPath+"/backup");
 		if (!downloadFilePath.exists()) {
 		    System.out.println("creating temporary backup directory: " + downloadFilePath);
 		    boolean result = false;
@@ -92,7 +118,7 @@ public class Tool {
 	    	   System.out.println("There has been an issue in reconnecting to the server.\nDo you want to retry?");
 	           e.printStackTrace();
 	       }
-        String destDirectory = relativePath+ "/backup/";
+        String destDirectory = directoryPath+ "/backup/";
         Unzipper zipFile = new Unzipper();
         try {
             zipFile.unzip(downloadPath, destDirectory);
@@ -103,7 +129,7 @@ public class Tool {
         }
         System.out.println("The unzipping was successful");
         String timeStamp = new SimpleDateFormat("yyyy-MM-dd-mm-ss").format(Calendar.getInstance().getTime());
-        String finalDest = relativePath + "/" + timeStamp + ".csv";
+        String finalDest = directoryPath + "/" + timeStamp + ".csv";
         ProcessCSV csv = new ProcessCSV(destDirectory+fileName+".csv",finalDest, ';');
 		try {
 			csv.process();
@@ -121,7 +147,10 @@ public class Tool {
 		backup.delete();
 		System.out.println("Deletion was successful");
 	}
-	
+	/**Called by the program upon execution. 
+	 * 
+	 * @param args Command line arguments
+	 */
 	public static void main(String[] args){
 		if(args.length < 1){
 			error(-1);
@@ -133,9 +162,9 @@ public class Tool {
 		}
 		else if(args.length==2 && args[0].equals("-output")){
 			Tool tool = new Tool();
-			File directory = new File(args[1]);
+			File directory = new File(args[1].trim());
 			Boolean pathExists = directory.isDirectory();
-			if(pathExists)	tool.output(args[1]);
+			if(pathExists)	tool.output(args[1].trim());
 			else{
 				System.out.println("The path that has been inputted is not a valid file path. Please try again.");
 			}
