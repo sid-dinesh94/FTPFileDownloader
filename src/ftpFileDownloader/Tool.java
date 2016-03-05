@@ -92,6 +92,11 @@ public class Tool {
 		}
 		String fileName = credentials[3]; 
 		String downloadPath = directoryPath + "/backup/" + fileName + ".zip";
+		
+		/*
+		 * Create the backup directory in the directoryPath provided
+		 */
+		
 		File downloadFilePath = new File(directoryPath+"/backup");
 		if (!downloadFilePath.exists()) {
 		    System.out.println("creating temporary backup directory: " + downloadFilePath);
@@ -103,12 +108,18 @@ public class Tool {
 		    } 
 		    catch(SecurityException se){
 		    	error(-2);
+		    	scan.close();
 		    	return;
 		    }        
 		    if(result) {    
 		        System.out.println("Backup Directory created");  
 		    }
 		}
+		/*
+		 * Attempting to download the zip file from the FTP server by calling an instance of the FileDownloader class.
+		 * Three attempts are allowed. With the user getting the ability to override this feature at every retry.
+		 */
+		
 		Boolean downloadFlag = true;
 		int downloadAttempt = 0;
 		while(downloadFlag){
@@ -123,6 +134,7 @@ public class Tool {
 		       } catch (IOException e) {
 		    	   if(downloadAttempt > 3){
 		    		   System.out.println("Maximum download tries exceeded. Exiting program.");
+		    		   scan.close();
 		    		   return;
 		    	   }
 		    	   System.out.println("There has been an issue in reconnecting to the server."
@@ -130,15 +142,24 @@ public class Tool {
 		    	   String input = scan.nextLine();
 		    	   if(input.equals("\n") || input.equalsIgnoreCase("n") || input.equalsIgnoreCase("no")){
 		    		   System.out.println("Quitting the download process");
+		    		   scan.close();
 		    		   return;
 		    	   }else if(input.equalsIgnoreCase("y") || input.equalsIgnoreCase("Yes")){
 		    		   System.out.println("Retrying download");
 		    	   }else{
 		    		   System.out.println("Invalid input. Exiting program assuming default NO option.");
+		    		   scan.close();
 		    		   return;
 		    	   }
 		       }
 		}
+		
+		/*
+		 * The following code is to unzip the zip file which has been downloaded 
+		 * It is done by calling the Unzipper class.
+		 * Two retries are allowed for this step. User gets the ability to override the retry. 
+		 */
+		
 		
         String destDirectory = directoryPath+ "/backup/";
         Unzipper zipFile = new Unzipper();
@@ -156,17 +177,31 @@ public class Tool {
 	        	String input = scan.nextLine();
 	        	if(input.equals("\n") || input.equalsIgnoreCase("n") || input.equalsIgnoreCase("no")){
 	    		   System.out.println("Quitting the unzipping process");
+	    		   scan.close();
 	    		   return;
 	    	   }else if(input.equalsIgnoreCase("y") || input.equalsIgnoreCase("Yes")){
 	    		   System.out.println("Retrying unzipping");
 	    	   }else{
 	    		   System.out.println("Invalid input. Exiting program assuming default NO option.");
+	    		   scan.close();
 	    		   return;
 	    	   }
 	        }
         }
+        if( unzipperCount >= 2){
+        	System.out.println("Extraction was not successful. Exiting gracefully.");
+        	scan.close();
+        	return;
+        }
+        
         System.out.println("The unzipping was successful");
-        String timeStamp = new SimpleDateFormat("yyyy-MM-dd-mm-ss").format(Calendar.getInstance().getTime());
+        
+        /*
+         * This code block is to process the CSV file and save it with the timestamp.
+         * Two retries are allowed
+         * The ProcessCSV class is called in this code block and the process method of that element is used. 
+         */
+        String timeStamp = new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
         String finalDest = directoryPath + "/" + timeStamp + ".csv";
         ProcessCSV csv = new ProcessCSV(destDirectory+fileName+".csv",finalDest, ';');
 		Boolean processFlag = true;
@@ -181,15 +216,18 @@ public class Tool {
 			 	String input = scan.nextLine();
 	        	if(input.equals("\n") || input.equalsIgnoreCase("n") || input.equalsIgnoreCase("no")){
 	    		   System.out.println("Quitting the processing step");
+	    		   scan.close();
 	    		   return;
 	    	    }else if(input.equalsIgnoreCase("y") || input.equalsIgnoreCase("Yes")){
 	    		   System.out.println("Retrying processing");
 	    	    }else{
 	    		   System.out.println("Invalid input. Exiting program assuming default NO option.");
+	    		   scan.close();
 	    		   return;
 	    	    }
 			}
 		}
+        scan.close();
 		File zip = new File(downloadPath);
 		zip.delete();
 		File spreadsheet = new File(destDirectory+fileName+".csv");

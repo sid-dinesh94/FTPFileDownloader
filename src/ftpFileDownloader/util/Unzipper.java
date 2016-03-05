@@ -11,7 +11,7 @@ import java.util.zip.ZipInputStream;
 /**
  * This utility extracts files and directories of a standard zip file to
  * a destination directory.
- * @author www.codejava.net
+ * @author siddharth dinesh
  *
  */
 public class Unzipper {
@@ -22,8 +22,8 @@ public class Unzipper {
     /**
      * Extracts a zip file specified by the zipFilePath to a directory specified by
      * destDirectory (will be created if does not exists)
-     * @param zipFilePath
-     * @param destDirectory
+     * @param zipFilePath path where zipFile exists
+     * @param destDirectory directory where we want it to be unzipped
      * @throws IOException
      */
     public void unzip(String zipFilePath, String destDirectory) throws IOException {
@@ -51,8 +51,8 @@ public class Unzipper {
     }
     /**
      * Extracts a zip entry (file entry)
-     * @param zipIn
-     * @param filePath
+     * @param zipIn inputStream from a zip file
+     * @param filePath where the data in the input stream has to be stored
      * @throws IOException
      */
     private void extractFile(ZipInputStream zipIn, String filePath) throws IOException {
@@ -64,7 +64,12 @@ public class Unzipper {
         }
         bos.close();
     }
-
+    
+    /** Method to check if unzipping class works as required. 
+     * 
+     * @param args
+     */
+    
     public static void main(String[] args) {
         String zipFilePath = "e:/temp.zip";
         String destDirectory = "e:/Sem 4-2";
