@@ -47,7 +47,7 @@ public class Tool {
 	}
 	
 	/**
-	 * This method checks to see if the inputted Absolute Directory Path exists in 
+	 * This method checks to see if the inputed Absolute Directory Path exists in 
 	 * the file system
 	 * @param path An instance of the Path class which carries the directory path
 	 * fed as input to the program
@@ -72,7 +72,7 @@ public class Tool {
 		
 		String [] credentials = new String[4];
 		/*
-		 * Reading from the credentials file and storing it into the credentials String array
+		 * Reading from the config file and storing it into the credentials String array
 		 * Contents of credentials[]:
 		 * credentials[0] = hostname
 		 * credentials[1] = username
@@ -86,7 +86,7 @@ public class Tool {
 				i++;
 			}
 		} catch (IOException e1) {
-			System.out.println("Credentials file is corrupted.\n");
+			System.out.println("Config file is corrupted.");
 			e1.printStackTrace();
 			return;
 		}
@@ -122,47 +122,74 @@ public class Tool {
 		           downloadFlag = false;
 		       } catch (IOException e) {
 		    	   if(downloadAttempt > 3){
-		    		   System.out.println("Maximum download tries exceeded. Exiting program.\n");
+		    		   System.out.println("Maximum download tries exceeded. Exiting program.");
 		    		   return;
 		    	   }
-		    	   System.out.println("There has been an issue in reconnecting to the server.\n"
+		    	   System.out.println("There has been an issue in reconnecting to the server."
 		    	   		+ "Do you want to retry? y or (n)");
 		    	   String input = scan.nextLine();
 		    	   if(input.equals("\n") || input.equalsIgnoreCase("n") || input.equalsIgnoreCase("no")){
-		    		   System.out.println("Quitting the download process\n");
+		    		   System.out.println("Quitting the download process");
 		    		   return;
 		    	   }else if(input.equalsIgnoreCase("y") || input.equalsIgnoreCase("Yes")){
-		    		   System.out.println("Retrying download\n");
-		    		   downloadAttempt++;
+		    		   System.out.println("Retrying download");
 		    	   }else{
-		    		   System.out.println("Invalid input. Exiting program assuming default NO option.\n");
+		    		   System.out.println("Invalid input. Exiting program assuming default NO option.");
 		    		   return;
 		    	   }
-		    	   //e.printStackTrace();
 		       }
 		}
 		
         String destDirectory = directoryPath+ "/backup/";
         Unzipper zipFile = new Unzipper();
-        try {
-            zipFile.unzip(downloadPath, destDirectory);
-        } catch (IOException ex) {
-            //Make logic to try extraction again
-        	System.out.println("Could not extract file\nWant to try again?");
-            ex.printStackTrace();
+        Boolean unzipperFlag = true;
+        int unzipperCount = 0;
+        while(unzipperFlag && unzipperCount < 2){
+	        try {
+	            unzipperCount ++;
+	            zipFile.unzip(downloadPath, destDirectory);
+	            unzipperFlag = false;
+	            
+	        } catch (IOException ex) {
+	            //Make logic to try extraction again
+	        	System.out.println("Could not extract file\nWant to try again: y or (n)?");
+	        	String input = scan.nextLine();
+	        	if(input.equals("\n") || input.equalsIgnoreCase("n") || input.equalsIgnoreCase("no")){
+	    		   System.out.println("Quitting the unzipping process");
+	    		   return;
+	    	   }else if(input.equalsIgnoreCase("y") || input.equalsIgnoreCase("Yes")){
+	    		   System.out.println("Retrying unzipping");
+	    	   }else{
+	    		   System.out.println("Invalid input. Exiting program assuming default NO option.");
+	    		   return;
+	    	   }
+	        }
         }
         System.out.println("The unzipping was successful");
         String timeStamp = new SimpleDateFormat("yyyy-MM-dd-mm-ss").format(Calendar.getInstance().getTime());
         String finalDest = directoryPath + "/" + timeStamp + ".csv";
         ProcessCSV csv = new ProcessCSV(destDirectory+fileName+".csv",finalDest, ';');
-		try {
-			csv.process();
-		} catch (IOException e) {
-			
-			System.out.println("Error in processing CSV file.\nWant to retry?");
-			e.printStackTrace();
+		Boolean processFlag = true;
+		int processCount = 0;
+        while(processFlag && processCount < 3){
+	        try {
+	        	processCount ++;
+				csv.process();
+				processFlag = false;
+			} catch (IOException e) {
+				System.out.println("Error in processing CSV file. Want to retry: y or (n)?");
+			 	String input = scan.nextLine();
+	        	if(input.equals("\n") || input.equalsIgnoreCase("n") || input.equalsIgnoreCase("no")){
+	    		   System.out.println("Quitting the processing step");
+	    		   return;
+	    	    }else if(input.equalsIgnoreCase("y") || input.equalsIgnoreCase("Yes")){
+	    		   System.out.println("Retrying processing");
+	    	    }else{
+	    		   System.out.println("Invalid input. Exiting program assuming default NO option.");
+	    		   return;
+	    	    }
+			}
 		}
-		
 		File zip = new File(downloadPath);
 		zip.delete();
 		File spreadsheet = new File(destDirectory+fileName+".csv");
