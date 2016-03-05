@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Scanner;
 import java.nio.file.*;
 
 import ftpFileDownloader.util.*;
@@ -64,8 +65,8 @@ public class Tool {
 	 */
 	public void output(String directoryPath){
 		InputStream credentialsFile;
-		credentialsFile = getClass().getClassLoader().getResourceAsStream("Credentials.txt");
-		
+		credentialsFile = getClass().getClassLoader().getResourceAsStream("config.txt");
+		Scanner scan = new Scanner(System.in);
 		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(credentialsFile));
 		String line;
 		
@@ -108,16 +109,39 @@ public class Tool {
 		        System.out.println("Backup Directory created");  
 		    }
 		}
-		try {
-	           FileDownloader ftpDownloader =
-	               new FileDownloader(credentials[0],credentials[1], credentials[2]);
-	           ftpDownloader.downloadFile(fileName+".zip", downloadPath);
-	           System.out.println("FTP File downloaded successfully");
-	           ftpDownloader.disconnect();
-	       } catch (IOException e) {
-	    	   System.out.println("There has been an issue in reconnecting to the server.\nDo you want to retry?");
-	           e.printStackTrace();
-	       }
+		Boolean downloadFlag = true;
+		int downloadAttempt = 0;
+		while(downloadFlag){
+			try {
+		           downloadAttempt++;
+				   FileDownloader ftpDownloader =
+		               new FileDownloader(credentials[0],credentials[1], credentials[2]);
+		           ftpDownloader.downloadFile(fileName+".zip", downloadPath);
+		           System.out.println("FTP File downloaded successfully");
+		           ftpDownloader.disconnect();
+		           downloadFlag = false;
+		       } catch (IOException e) {
+		    	   if(downloadAttempt > 3){
+		    		   System.out.println("Maximum download tries exceeded. Exiting program.\n");
+		    		   return;
+		    	   }
+		    	   System.out.println("There has been an issue in reconnecting to the server.\n"
+		    	   		+ "Do you want to retry? y or (n)");
+		    	   String input = scan.nextLine();
+		    	   if(input.equals("\n") || input.equalsIgnoreCase("n") || input.equalsIgnoreCase("no")){
+		    		   System.out.println("Quitting the download process\n");
+		    		   return;
+		    	   }else if(input.equalsIgnoreCase("y") || input.equalsIgnoreCase("Yes")){
+		    		   System.out.println("Retrying download\n");
+		    		   downloadAttempt++;
+		    	   }else{
+		    		   System.out.println("Invalid input. Exiting program assuming default NO option.\n");
+		    		   return;
+		    	   }
+		    	   //e.printStackTrace();
+		       }
+		}
+		
         String destDirectory = directoryPath+ "/backup/";
         Unzipper zipFile = new Unzipper();
         try {
